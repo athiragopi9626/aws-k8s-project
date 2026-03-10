@@ -20,7 +20,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
       - run: |
           terraform init
-          terraform apply -auto-approve
+          terraform destroy -auto-approve
 
       - name: Update Kubeconfig
         run: aws eks update-kubeconfig --name ai-eks-lab --region eu-west-1
