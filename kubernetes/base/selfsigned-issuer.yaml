@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+# Purpose: Cluster-wide self-signed issuer for TLS demo
+# No real domain needed; suitable for public repo / demo

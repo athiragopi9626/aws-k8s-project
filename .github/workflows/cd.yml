@@ -1,43 +1,62 @@
-name: "CD - Deploy AI App"
-on:
-  push:
-    branches: [ main ]
+# name: CD Pipeline
 
-permissions:
-  id-token: write
-  contents: read
+# on:
+#   workflow_run:
+#     workflows: ["CI Pipeline"]
+#     types:
+#       - completed
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-west-1
+# permissions:
+#   id-token: write
+#   contents: read
 
-      - uses: hashicorp/setup-terraform@v3
-      - run: |
-          terraform init
-          terraform apply -auto-approve
+# jobs:
+#   deploy:
+#     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+#     runs-on: ubuntu-latest
 
-      - name: Update Kubeconfig
-        run: aws eks update-kubeconfig --name ai-eks-lab --region eu-west-1
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v3
 
-      # STEP 2: INSTALL GPU DRIVERS AND DEVICE PLUGIN
-      - name: Install NVIDIA Device Plugin
-        run: |
-          helm repo add nvdp https://nvidia.github.io
-          helm repo update
-          helm upgrade --install nvdp nvdp/nvidia-device-plugin --namespace kube-system
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#           aws-region: eu-west-1
+#         # No secrets in repo; OIDC role handles authentication
 
-      # STEP 1: CREATE HUGGING FACE SECRET
-      - name: Create HF Secret
-        run: |
-          kubectl create secret generic hf-token \
-            --from-literal=token=${{ secrets.HF_TOKEN }} \
-            --dry-run=client -o yaml | kubectl apply -f -
-            
-      - name: Deploy AI App
-        run: kubectl apply -f k8s/
+#       - name: Install Terraform
+#         uses: hashicorp/setup-terraform@v2
+#         with:
+#           terraform_version: 1.5.0
+
+#       - name: Terraform Apply
+#         run: terraform -chdir=infrastructure/terraform apply -auto-approve
+#         # Purpose: Deploy infra (EKS cluster, node groups)
+#         # Safe: only runs if CI succeeds
+
+#       - name: Install kubectl
+#         uses: azure/setup-kubectl@v3
+#         with:
+#           version: "v1.29.3"
+
+#       - name: Install Helm
+#         uses: azure/setup-helm@v3
+#         with:
+#           version: "v3.12.0"
+
+#       - name: Deploy Helm Charts
+#         run: |
+#           helm upgrade --install nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace
+#           helm upgrade --install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace
+#           helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace
+#         # Charts are public; purpose: ingress, monitoring, GitOps
+
+#       - name: Deploy Kubernetes Apps
+#         run: |
+#           kubectl apply -f kubernetes/base/backend-deploy.yaml
+#           kubectl apply -f kubernetes/base/frontend-deploy.yaml
+#           kubectl apply -f kubernetes/base/backend-hpa.yaml
+#           kubectl apply -f kubernetes/base/ingress.yaml
+#         # Images are public demo images

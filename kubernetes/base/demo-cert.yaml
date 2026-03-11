@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: demo-cert
+  namespace: default
+spec:
+  secretName: demo-tls
+  commonName: demo.local
+  dnsNames:
+    - demo.local
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+# Purpose: Generate self-signed TLS cert for demo Ingress
+# Stored in secret 'demo-tls' and used by NGINX Ingress

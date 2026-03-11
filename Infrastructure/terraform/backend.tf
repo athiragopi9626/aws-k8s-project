@@ -6,7 +6,7 @@ terraform {
     key          = "eks/ai-lab/terraform.tfstate"
     region       = "eu-west-1"
     
-    # THE MODERN WAY: No DynamoDB needed!
+    #  No DynamoDB needed!
     use_lockfile = true 
     encrypt      = true
   }
