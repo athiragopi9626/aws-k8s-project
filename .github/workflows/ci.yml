@@ -22,7 +22,7 @@ jobs:
         working-directory: eks-cluster
       - run: terraform plan
         working-directory: eks-cluster
-      - run: terraform apply -auto-approve
+      - run: terraform destroy -auto-approve
         working-directory: eks-cluster
 
 
