@@ -12,7 +12,9 @@ module "vpc" {
 
   # Cost Optimization: Single NAT Gateway instead of one per AZ
   enable_nat_gateway = true
-  single_nat_gateway = true 
+  single_nat_gateway = true
+  enable_dns_hostnames = true  # CRITICAL for EKS nodes to join cluster
+  enable_dns_support   = true  # Ensures internal AWS DNS works
 
   # Mandatory Tags for AWS Load Balancer Controller
   public_subnet_tags = {
