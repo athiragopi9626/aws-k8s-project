@@ -19,4 +19,18 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
       - run: terraform init
+        working-directory: eks-cluster
       - run: terraform plan
+        working-directory: eks-cluster
+
+
+      # This step uses your TF output to link GitHub to your new cluster
+      - name: Update Kubeconfig
+        run: |
+          aws eks update-kubeconfig --region eu-west-1 --name gitops-demo-cluster
+
+      # Verify the cluster is up and nodes are ready
+      - name: Verify Cluster
+        run: |
+          kubectl get nodes
+          kubectl get pods -A
