@@ -1,43 +1,43 @@
-name: "CD - Deploy AI App"
-on:
-  push:
-    branches: [ main ]
+# name: "CD - Deploy AI App"
+# on:
+#   push:
+#     branches: [ main ]
 
-permissions:
-  id-token: write
-  contents: read
+# permissions:
+#   id-token: write
+#   contents: read
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-west-1
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#           aws-region: eu-west-1
 
-      - uses: hashicorp/setup-terraform@v3
-      - run: |
-          terraform init
-          terraform destroy -auto-approve
+#       - uses: hashicorp/setup-terraform@v3
+#       - run: |
+#           terraform init
+#           terraform destroy -auto-approve
 
-      - name: Update Kubeconfig
-        run: aws eks update-kubeconfig --name ai-eks-lab --region eu-west-1
+#       - name: Update Kubeconfig
+#         run: aws eks update-kubeconfig --name ai-eks-lab --region eu-west-1
 
-      # STEP 2: INSTALL GPU DRIVERS AND DEVICE PLUGIN
-      - name: Install NVIDIA Device Plugin
-        run: |
-          helm repo add nvdp https://nvidia.github.io
-          helm repo update
-          helm upgrade --install nvdp nvdp/nvidia-device-plugin --namespace kube-system
+#       # STEP 2: INSTALL GPU DRIVERS AND DEVICE PLUGIN
+#       - name: Install NVIDIA Device Plugin
+#         run: |
+#           helm repo add nvdp https://nvidia.github.io
+#           helm repo update
+#           helm upgrade --install nvdp nvdp/nvidia-device-plugin --namespace kube-system
 
-      # STEP 1: CREATE HUGGING FACE SECRET
-      - name: Create HF Secret
-        run: |
-          kubectl create secret generic hf-token \
-            --from-literal=token=${{ secrets.HF_TOKEN }} \
-            --dry-run=client -o yaml | kubectl apply -f -
+#       # STEP 1: CREATE HUGGING FACE SECRET
+#       - name: Create HF Secret
+#         run: |
+#           kubectl create secret generic hf-token \
+#             --from-literal=token=${{ secrets.HF_TOKEN }} \
+#             --dry-run=client -o yaml | kubectl apply -f -
             
-      - name: Deploy AI App
-        run: kubectl apply -f k8s/
+#       - name: Deploy AI App
+#         run: kubectl apply -f k8s/
